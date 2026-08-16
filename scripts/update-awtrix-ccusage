@@ -1,0 +1,108 @@
+#!/bin/zsh
+set -eu
+
+PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
+AWTRIX_CONFIG=${AWTRIX_CONFIG:-"$HOME/.config/ulanzi-codex-usage/config"}
+
+if [[ -z ${AWTRIX_HOST:-} && -r "$AWTRIX_CONFIG" ]]; then
+  AWTRIX_HOST=$(sed -n 's/^AWTRIX_HOST=//p' "$AWTRIX_CONFIG" | tail -1)
+fi
+
+format_cost() {
+  awk -v cost="$1" 'BEGIN {
+    if (cost < 100) value = sprintf("%.2f", cost)
+    else if (cost < 1000) value = sprintf("%.1f", cost)
+    else if (cost < 10000) value = sprintf("%.0f", cost)
+    else if (cost < 100000) value = sprintf("%.1fk", cost / 1000)
+    else value = sprintf("%.0fk", cost / 1000)
+
+    if (length(value) > 5) {
+      if (cost < 1000) value = sprintf("%.0f", cost)
+      else value = sprintf("%.0fk", cost / 1000)
+    }
+    print value
+  }'
+}
+
+format_tokens() {
+  awk -v tokens="$1" 'BEGIN {
+    if (tokens < 1000) value = sprintf("%.0f", tokens)
+    else if (tokens < 1000000) value = sprintf("%.1fk", tokens / 1000)
+    else if (tokens < 1000000000) value = sprintf("%.1fm", tokens / 1000000)
+    else value = sprintf("%.1fb", tokens / 1000000000)
+
+    if (length(value) > 5) {
+      if (tokens < 1000000) value = sprintf("%.0fk", tokens / 1000)
+      else if (tokens < 1000000000) value = sprintf("%.0fm", tokens / 1000000)
+      else value = sprintf("%.0fb", tokens / 1000000000)
+    }
+    print value
+  }'
+}
+
+if [[ ${1:-} == '--self-test' ]]; then
+  [[ $(format_cost 32.219) == '32.22' ]]
+  [[ $(format_cost 123.45) == '123.5' ]]
+  [[ $(format_cost 1234.6) == '1235' ]]
+  [[ $(format_cost 12345) == '12.3k' ]]
+  [[ $(format_tokens 999) == '999' ]]
+  [[ $(format_tokens 12345) == '12.3k' ]]
+  [[ $(format_tokens 58353665) == '58.4m' ]]
+  [[ $(format_tokens 1234567890) == '1.2b' ]]
+  exit
+fi
+
+if [[ -z ${AWTRIX_HOST:-} ]]; then
+  print -u2 "AWTRIX_HOST is not set. Run scripts/install-macos.sh or set it in $AWTRIX_CONFIG."
+  exit 2
+fi
+
+usage=$(npx --yes ccusage@20.0.20 codex daily --last 1 --json --offline)
+cost=$(jq -er '.daily[-1].costUSD // 0' <<<"$usage")
+tokens=$(jq -er '.daily[-1].totalTokens // 0' <<<"$usage")
+cost_text=$(format_cost "$cost")
+token_text=$(format_tokens "$tokens")
+
+cost_payload=$(jq -nc --arg text "$cost_text" '{
+  draw: [
+    {dfc: [3, 3, 3, "#C97800"]},
+    {dfc: [3, 3, 2, "#FFD84A"]},
+    {dp: [2, 2, "#FFF4AC"]},
+    {dp: [4, 4, "#E1A400"]},
+    {dp: [9, 0, "#FFFFFF"]},
+    {dl: [8, 1, 10, 1, "#FFFFFF"]},
+    {dl: [8, 2, 8, 3, "#FFFFFF"]},
+    {dl: [8, 3, 10, 3, "#FFFFFF"]},
+    {dl: [10, 4, 10, 5, "#FFFFFF"]},
+    {dl: [8, 5, 10, 5, "#FFFFFF"]},
+    {dp: [9, 6, "#FFFFFF"]},
+    {dt: [12, 1, $text, "#FFFFFF"]}
+  ],
+  lifetime: 180,
+  lifetimeMode: 1
+}')
+
+token_payload=$(jq -nc --arg text "$token_text" '{
+  draw: [
+    {db: [0, 0, 8, 8, [0,0,0,15311872,0,0,16767050,0,0,0,0,16767050,0,16767050,16777215,16767050,0,0,16767050,16774312,16767050,0,16767050,0,15311872,16767050,16774312,16777215,16774312,16767050,15311872,0,0,0,16767050,16774312,16767050,0,0,0,0,16767050,0,16767050,0,0,0,0,16767050,16777215,16767050,15311872,0,0,0,0,0,16767050,0,0,0,0,0,0]]},
+    {dt: [9, 1, $text, "#FFFFFF"]}
+  ],
+  pos: 1,
+  lifetime: 180,
+  lifetimeMode: 1
+}')
+
+curl --fail --silent --show-error \
+  --connect-timeout 5 --max-time 10 \
+  -X POST "http://${AWTRIX_HOST}/api/custom?name=ccusage" \
+  -H 'Content-Type: application/json' \
+  --data-binary "$cost_payload" >/dev/null
+
+curl --fail --silent --show-error \
+  --connect-timeout 5 --max-time 10 \
+  -X POST "http://${AWTRIX_HOST}/api/custom?name=tokens" \
+  -H 'Content-Type: application/json' \
+  --data-binary "$token_payload" >/dev/null
+
+printf '%s $%s %s tokens\n' \
+  "$(date '+%Y-%m-%d %H:%M:%S')" "$cost_text" "$token_text"

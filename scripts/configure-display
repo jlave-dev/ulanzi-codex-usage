@@ -1,0 +1,19 @@
+#!/bin/zsh
+set -eu
+
+if [[ $# -ne 1 || $1 == -* ]]; then
+  print -u2 "Usage: $0 AWTRIX_HOST"
+  exit 2
+fi
+
+host=$1
+
+curl --fail --silent --show-error \
+  -X POST "http://${host}/api/settings" \
+  -H 'Content-Type: application/json' \
+  --data-binary '{"TIM":false,"DAT":false,"TEMP":false,"HUM":false,"BAT":false,"ABRI":true}'
+print
+
+# Native app changes require a reboot.
+curl --fail --silent --show-error -X POST "http://${host}/api/reboot" >/dev/null || true
+print 'Configured custom-app-only mode with automatic brightness. The display is rebooting.'
