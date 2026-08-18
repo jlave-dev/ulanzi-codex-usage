@@ -2,7 +2,7 @@
 
 This project shows today's Codex token cost and token count on a Ulanzi TC001 running AWTRIX NG. A Mac reads its local Codex usage with `ccusage` and updates two 32×8 screens over the local AWTRIX HTTP API every minute.
 
-The cost screen uses an 8×8 money-with-wings bitmap, a hand-drawn dollar sign, and a compact dollar value. The token screen uses an 8×8 sparkle bitmap and a compact token count. The cost label starts at column 12; its numeric value starts at column 16 after the dollar sign. The token count starts at column 12.
+The cost screen uses an 8×8 money-with-wings bitmap, a hand-drawn dollar sign, and a compact dollar value. The token screen uses an 8×8 sparkle bitmap and a compact token count. Both icons occupy columns `x=0..7`; both screens start text at `x=10`. The cost value starts at `x=14` after the dollar sign.
 
 ## Requirements
 

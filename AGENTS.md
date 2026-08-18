@@ -29,7 +29,7 @@ When the user authorizes live-device validation, set `AWTRIX_HOST` explicitly an
 - Keep formatted cost and token values at five characters or fewer.
 - Preserve the explicit dollar-sign drawing. The built-in font dollar sign rendered poorly on this display.
 - Preserve the money-with-wings cost bitmap and sparkle token bitmap unless the user requests a new visual design.
-- The cost label begins at `x=12`; its numeric value begins at `x=16` after the custom dollar sign. The token text begins at `x=12`.
+- Both 8×8 icons occupy `x=0..7`; both screens start text at `x=10`. The cost numeric value begins at `x=14` after the custom dollar sign.
 - Preserve the text baseline at `y=1` unless a physical-device check supports a change.
 - Do not add an app expiration field. The display should keep the last values visible if the updater is temporarily stopped.
 - Keep only the cost and token custom apps in the normal loop.
