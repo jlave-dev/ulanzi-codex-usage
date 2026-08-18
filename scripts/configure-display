@@ -9,11 +9,13 @@ fi
 host=$1
 
 curl --fail --silent --show-error \
-  -X POST "http://${host}/api/settings" \
+  -X PATCH "http://${host}/api/v1/settings" \
   -H 'Content-Type: application/json' \
-  --data-binary '{"TIM":false,"DAT":false,"TEMP":false,"HUM":false,"BAT":false,"ABRI":true}'
-print
+  --data-binary '{"autoBrightness":true,"autoTransition":true,"appDurationMs":7000,"transitionEffect":"Fade","transitionDurationMs":500}' >/dev/null
 
-# Native app changes require a reboot.
-curl --fail --silent --show-error -X POST "http://${host}/api/reboot" >/dev/null || true
-print 'Configured custom-app-only mode with automatic brightness. The display is rebooting.'
+curl --fail --silent --show-error \
+  -X PUT "http://${host}/api/v1/apps/order" \
+  -H 'Content-Type: application/json' \
+  --data-binary '{"order":["ccusage","tokens"],"disabled":["Time","Date","Temperature","Humidity","Battery"]}' >/dev/null
+
+print 'Configured AWTRIX NG for cost and token apps with automatic brightness and a 500 ms fade.'

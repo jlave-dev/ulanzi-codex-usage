@@ -1,15 +1,15 @@
 # Firmware Setup and Recovery
 
-The updater requires a Ulanzi TC001 running AWTRIX3. Firmware installation is separate from the computer setup in the root `README.md`.
+The updater requires a Ulanzi TC001 running AWTRIX NG. Firmware installation is separate from the computer setup in the root `README.md`.
 
-## Install AWTRIX3
+## Install AWTRIX NG
 
-Use the [official AWTRIX3 TC001 flasher](https://blueforcer.github.io/awtrix3/#/flasher) in Chrome or Edge. Select erase for a new installation.
+Use the [official AWTRIX NG flasher](https://blueforcer.github.io/awtrix-ng/flasher/) in Chrome, Edge, or Opera. For a TC001, select the classic ESP32 4 MB image.
 
 After flashing:
 
-1. Connect temporarily to the `awtrix_XXXXX` setup access point.
-2. Open `http://192.168.4.1`.
+1. Connect temporarily to the AWTRIX NG setup access point.
+2. Open the setup page shown by the access point, or browse to `http://192.168.4.1`.
 3. Configure the display for the local Wi-Fi network.
 4. Reserve the display address in the router or assign it a stable hostname.
 5. Follow the root `README.md` to install the updater.
@@ -18,7 +18,7 @@ Do not expose the AWTRIX HTTP API to the Internet.
 
 ## Back up factory firmware first
 
-If the clock still has its factory firmware, make a private full-flash backup before installing AWTRIX3. Do not commit the backup to a public repository. It can contain unique device identifiers, Wi-Fi configuration, or other saved state.
+If the clock still has its factory firmware, make a private full-flash backup before installing AWTRIX NG. Do not commit the backup to a public repository. It can contain unique device identifiers, Wi-Fi configuration, or other saved state.
 
 Install Espressif's flash tool on macOS:
 
@@ -51,7 +51,7 @@ Factory firmware can update writable state between boots, so full-image hashes c
 
 ## Restore a private backup
 
-Restoring firmware erases AWTRIX3 and all settings. Confirm the target device, flash size, serial port, and backup hash before starting.
+Restoring firmware erases AWTRIX NG and all settings. Confirm the target device, flash size, serial port, and backup hash before starting.
 
 For a verified 4 MB backup:
 

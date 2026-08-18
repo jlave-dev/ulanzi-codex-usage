@@ -1,12 +1,12 @@
 # Ulanzi Codex Usage Display
 
-This project shows today's Codex token cost and token count on a Ulanzi TC001 running AWTRIX3. A Mac reads its local Codex usage with `ccusage` and updates two 32×8 screens over the local AWTRIX HTTP API every minute.
+This project shows today's Codex token cost and token count on a Ulanzi TC001 running AWTRIX NG. A Mac reads its local Codex usage with `ccusage` and updates two 32×8 screens over the local AWTRIX HTTP API every minute.
 
-The cost screen uses a yellow coin, a hand-drawn dollar sign, and a compact dollar value. The token screen uses a sparkle icon and a compact token count.
+The cost screen uses an 8×8 money-with-wings bitmap, a hand-drawn dollar sign, and a compact dollar value. The token screen uses an 8×8 sparkle bitmap and a compact token count. The cost label starts at column 12; its numeric value starts at column 16 after the dollar sign. The token count starts at column 12.
 
 ## Requirements
 
-- A Ulanzi TC001 with AWTRIX3 installed
+- A Ulanzi TC001 with AWTRIX NG installed
 - macOS with Node.js, `npx`, `jq`, and `curl`
 - Network access from the Mac to the display's HTTP port 80
 - Local Codex session data on the Mac
@@ -21,11 +21,11 @@ brew install node jq
 
 ## Set up a new Mac
 
-1. Connect AWTRIX3 to Wi-Fi. Reserve its address in the router, or assign it a stable hostname.
+1. Connect AWTRIX NG to Wi-Fi. Reserve its address in the router, or assign it a stable hostname.
 2. Confirm that the Mac can reach it. Replace the example address:
 
    ```bash
-   curl http://192.168.1.50/api/stats
+   curl http://192.168.1.50/api/v1/device
    ```
 
 3. Clone this repository and run the installer:
@@ -36,13 +36,13 @@ brew install node jq
    ./scripts/install-macos.sh 192.168.1.50
    ```
 
-4. If this is a fresh AWTRIX3 installation, reproduce the current display settings. This disables the built-in time, date, temperature, humidity, and battery screens. It also enables automatic brightness:
+4. If this is a fresh AWTRIX NG installation, configure the display. This disables the built-in time, date, temperature, humidity, and battery screens. It also enables automatic brightness and a 500 ms fade between the two custom screens:
 
    ```bash
    ./scripts/configure-display 192.168.1.50
    ```
 
-5. After the display restarts, trigger an immediate update:
+5. Trigger an immediate update:
 
    ```bash
    ~/.local/bin/update-awtrix-ccusage
@@ -56,7 +56,7 @@ The installer creates:
 - `~/Library/Logs/awtrix-ccusage.log`
 - `~/Library/Logs/awtrix-ccusage.error.log`
 
-The LaunchAgent runs once at login and every 60 seconds afterward.
+The LaunchAgent runs once at login and every 60 seconds afterward. Each update replaces both custom apps without an expiration, so the last values remain visible if the updater stops.
 
 ## What data it shows
 
@@ -116,6 +116,8 @@ tail -n 50 ~/Library/Logs/awtrix-ccusage.log
 
 If `ccusage` reports no data, run the command from the **What data it shows** section. Confirm that Codex has local session data for today under the same macOS user account.
 
+If the display changes screens without a visible transition, check the AWTRIX setting. It should report `transitionEffect: Fade`, `transitionDurationMs: 500`, and `autoTransition: true`.
+
 ## Remove the macOS service
 
 ```bash
@@ -133,6 +135,6 @@ Keep the AWTRIX HTTP API on a trusted local network. Do not forward TCP port 80 
 
 ## Firmware and recovery
 
-[Firmware setup and recovery](docs/device-recovery.md) explains how to install AWTRIX3 and how to prepare a private factory backup. Raw firmware backups are intentionally excluded because they can contain device identifiers and saved configuration.
+[Firmware setup and recovery](docs/device-recovery.md) explains how to install AWTRIX NG and how to prepare a private factory backup. Raw firmware backups are intentionally excluded because they can contain device identifiers and saved configuration.
 
-The AWTRIX API reference is maintained in the [AWTRIX3 project](https://github.com/Blueforcer/awtrix3/blob/main/docs/api.md).
+The AWTRIX API reference is maintained in the [AWTRIX NG project](https://github.com/Blueforcer/awtrix-ng) and its [HTTP API documentation](https://blueforcer.github.io/awtrix-ng/reference/http/).
